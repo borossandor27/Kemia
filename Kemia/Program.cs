@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using System.IO;
+using System.Text.RegularExpressions;
 
 namespace Kemia
 {
@@ -15,8 +15,18 @@ namespace Kemia
             Beolvas("felfedezesek.csv");
             Console.WriteLine($"\n3. feladat: Elemek száma: {elemek.Count}");
             Console.WriteLine($"\n4. feladat: Elemek száma: {elemek.FindAll(a => a.Evszam.Equals("Ókor")).Count}");
-            string jel = Vegyjel();
-            Elem keresett = elemek.Find(a => a.Vegyjel.ToLower() == jel);
+
+            string vegyjel = "";
+            //Regex reg = new Regex(@"^[a-zA-Z'.]{1,2}$");
+            do
+            {
+                Console.Write("5. feladat: kérek egy vegyjelet: ");
+                vegyjel = Console.ReadLine();
+            } while (!Regex.IsMatch(vegyjel,
+                               @"^['a-zA-Z'.]{1,2}$"));
+
+
+            Elem keresett = elemek.Find(a => a.Vegyjel.ToLower() == vegyjel);
             Console.WriteLine("\n6. feladat: Keresés");
             Console.WriteLine($"\tAz elem vegyjele: {keresett.Vegyjel}");
             Console.WriteLine($"\tAz elem neve: {keresett.Nev}");
@@ -24,15 +34,8 @@ namespace Kemia
             Console.WriteLine($"\tFelfedezés éve: {keresett.Evszam}");
             Console.WriteLine($"\tFelfedező: {keresett.Felfedezo}");
 
-            string[] ev = elemek.FindAll(a => !a.Evszam.Equals("Ókor")).Select(b => b.Evszam).ToArray();
-            int max = 0;
-            for (int i = 0; i < ev.Length-1; i++)
-            {
-                if (int.Parse(ev[i+1])-int.Parse(ev[i]) > max )
-                {
-                    max = int.Parse(ev[i + 1]) - int.Parse(ev[i]);
-                }
-            }
+            int[] evek = elemek.FindAll(a => !a.Evszam.Equals("Ókor")).Select(b => int.Parse(b.Evszam)).ToArray();
+            int max = evek.Skip(1).Zip(evek, (second, first) => new { a = first, b = second }).Max(c => Math.Abs(c.a - c.b));
             Console.WriteLine($"\n7. feladat: {max} év volt a leghosszabb időszak két elem felfedezése között.");
             Console.WriteLine("\n8 feladat: Statisztika");
 
@@ -65,31 +68,5 @@ namespace Kemia
             }
         }
 
-        static string Vegyjel()
-        {
-            List<char> abc = new List<char> { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' };
-            bool igen = true;
-            string jel = "";
-            do
-            {
-                igen = true;
-                Console.Write("5. feladat: kérek egy vegyjelet: ");
-                jel = Console.ReadLine().ToLower();
-                if (string.IsNullOrEmpty(jel) || jel.Length > 2)
-                {
-                    igen = false;
-                    continue;
-                }
-                for (int i = 0; i < jel.Length; i++)
-                {
-                    if (!abc.Contains(jel[i]) )
-                    {
-                        igen = false;
-                        continue;
-                    } 
-                }
-            } while (!igen);
-            return jel;
-        }
     }
 }
